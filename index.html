@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ስማርት ሱቅ - ዓለም አቀፍ አስተዳዳሪ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body class="bg-slate-900 font-sans p-2 md:p-4 min-h-screen flex items-center justify-center text-slate-100">
+
+    <!-- 🔗 የ GOOGLE APPS SCRIPT URL ማስገቢያ -->
+    <script>
+        const GOOGLE_SCRIPT_URL = "የጉግል_አፕ_ስክሪፕት_DEPLOYMENT_URLህን_እዚህ_ለጥፈው";
+    </script>
+
+    <div id="main-box" class="w-full max-w-md bg-slate-800 rounded-3xl shadow-2xl p-5 border border-slate-700 space-y-6">
+        
+        <!-- 🌟 PORTAL SCREEN -->
+        <div id="portal-screen" class="space-y-6 text-center py-4">
+            <div class="space-y-2">
+                <div class="text-4xl">🌍</div>
+                <h2 class="text-2xl font-black bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">ስማርት ሱቅ ፖርታል</h2>
+                <p class="text-xs text-slate-400">ዓለም አቀፍ የሱቅ ማስተዳደሪያ ስርዓት</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 pt-2">
+                <button onclick="showAuth('owner')" class="bg-gradient-to-br from-indigo-600 to-blue-700 p-4 rounded-2xl text-left shadow-lg cursor-pointer">
+                    <h3 class="font-bold text-sm text-white">🏢 የባለሱቅ ገጽ (Owner)</h3>
+                    <p class="text-[11px] text-indigo-200">ሪፖርቶች፣ ሊንክ መፍጠሪያ፣ ወጪና ገቢ</p>
+                </button>
+                <button onclick="showAuth('employee')" class="bg-gradient-to-br from-emerald-600 to-teal-700 p-4 rounded-2xl text-left shadow-lg cursor-pointer">
+                    <h3 class="font-bold text-sm text-white">🧑‍💼 የተቃጣሪ ገጽ (Employee POS)</h3>
+                    <p class="text-[11px] text-emerald-200">የዕቃ ሽያጭ መመዝገቢያ</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- 🔐 AUTH SCREEN -->
+        <div id="auth-screen" class="hidden space-y-4">
+            <button onclick="backToPortal()" class="text-xs font-bold text-slate-400">⬅️ ተመለስ</button>
+            <h3 id="auth-title" class="text-lg font-bold text-slate-200">መግቢያ</h3>
+            
+            <div class="space-y-3">
+                <input type="text" id="auth_shop_name" placeholder="የሱቅ ስም (Shop Name)" class="w-full p-3 bg-slate-700 border border-slate-600 rounded-xl text-sm outline-none text-white">
+                <div id="owner-extra-fields" class="hidden space-y-3">
+                    <input type="text" id="auth_owner_name" placeholder="የባለቤቱ ሙሉ ስም" class="w-full p-3 bg-slate-700 border border-slate-600 rounded-xl text-sm outline-none text-white">
+                    <input type="number" id="auth_telegram_chat_id" placeholder="የእርስዎ Telegram ID (ትዕዛዝ እንዲደርስዎት)" class="w-full p-3 bg-slate-700 border border-slate-600 rounded-xl text-sm outline-none text-white">
+                </div>
+                <input type="password" id="auth_password" placeholder="የይለፍ ቃል (Password)" class="w-full p-3 bg-slate-700 border border-slate-600 rounded-xl text-sm outline-none text-white">
+                
+                <div class="grid grid-cols-2 gap-2 pt-2">
+                    <button onclick="handleLogin()" class="bg-indigo-600 text-white font-bold py-3 rounded-xl text-xs">🔑 ግባ (Login)</button>
+                    <button id="register-btn" onclick="handleRegister()" class="bg-slate-600 text-slate-200 font-bold py-3 rounded-xl text-xs">➕ ሱቅ መዝግብ</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 👑 OWNER DASHBOARD -->
+        <div id="owner-screen" class="hidden space-y-4 text-slate-800">
+            <div class="flex justify-between items-center">
+                <h2 id="owner-header" class="text-base font-bold text-slate-900">ባለቤት 🏢</h2>
+                <button onclick="logout()" class="text-xs font-bold text-red-500">🚪 ውጣ</button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex bg-slate-100 p-1 rounded-xl text-[11px] font-bold">
+                <button onclick="switchTab('insights')" class="flex-1 py-2 rounded-lg bg-white shadow-sm">📊 ሪፖርት</button>
+                <button onclick="switchTab('links')" class="flex-1 py-2 rounded-lg text-slate-600">🔗 ሊንክ ስጥ</button>
+                <button onclick="switchTab('product')" class="flex-1 py-2 rounded-lg text-slate-600">📦 እቃ መዝግብ</button>
+                <button onclick="switchTab('finance')" class="flex-1 py-2 rounded-lg text-slate-600">💰 ሂሳብ</button>
+            </div>
+
+            <div class="bg-white rounded-2xl p-3 min-h-[320px] max-h-[460px] overflow-y-auto space-y-4">
+                
+                <!-- Insights Tab -->
+                <div id="tab-insights" class="tab-content space-y-3">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                            <span class="text-[10px] uppercase font-bold text-emerald-600">የዛሬ ሽያጭ</span>
+                            <span id="sales-stat" class="text-base font-black text-emerald-700 block">0.00 ብር</span>
+                        </div>
+                        <div class="bg-rose-50 p-3 rounded-xl border border-rose-100">
+                            <span class="text-[10px] uppercase font-bold text-rose-600">የዛሬ ወጪ</span>
+                            <span id="expense-stat" class="text-base font-black text-rose-700 block">0.00 ብር</span>
+                        </div>
+                    </div>
+                    <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-100 text-xs">
+                        <h5 class="font-bold text-amber-800">⚠️ ያለቁ/ያነሱ እቃዎች (Low Stock)</h5>
+                        <ul id="low-stock-box" class="mt-1 text-[11px] text-amber-700 list-disc list-inside"><li>የሉም</li></ul>
+                    </div>
+                </div>
+
+                <!-- 🔗 3. LINK GENERATOR TAB (አስተዳዳሪው ለሰራተኛ እና ደንበኛ ሊንክ የሚያወጣበት) -->
+                <div id="tab-links" class="tab-content hidden space-y-3">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase">🔗 ለሰራተኛ እና ለደንበኞች ሊንክ ማመንጫ</h4>
+                    
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                        <label class="text-xs font-bold text-slate-700">🧑‍💼 የተቃጣሪ POS መሸጫ ሊንክ፦</label>
+                        <div class="flex gap-1">
+                            <input type="text" id="employee-link-input" readonly class="w-full text-xs p-2 bg-white border border-slate-300 rounded-lg">
+                            <button onclick="copyLink('employee-link-input')" class="bg-indigo-600 text-white text-xs px-3 rounded-lg font-bold">ኮፒ</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                        <label class="text-xs font-bold text-slate-700">🛍️ የደንበኞች ማዘዣ ሊንክ (Customer App)፦</label>
+                        <div class="flex gap-1">
+                            <input type="text" id="customer-link-input" readonly class="w-full text-xs p-2 bg-white border border-slate-300 rounded-lg">
+                            <button onclick="copyLink('customer-link-input')" class="bg-emerald-600 text-white text-xs px-3 rounded-lg font-bold">ኮፒ</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Product Tab -->
+                <div id="tab-product" class="tab-content hidden space-y-2">
+                    <input type="text" id="p_name" placeholder="የምርት ስም" class="w-full p-2 border rounded-xl text-xs bg-slate-50">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="p_qty" placeholder="ብዛት" class="p-2 border rounded-xl text-xs bg-slate-50">
+                        <input type="text" id="p_barcode" placeholder="ባርኮድ" class="p-2 border rounded-xl text-xs bg-slate-50">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="p_buying" placeholder="መግዣ ዋጋ" class="p-2 border rounded-xl text-xs bg-slate-50">
+                        <input type="number" id="p_selling" placeholder="መሸጫ ዋጋ" class="p-2 border rounded-xl text-xs bg-slate-50">
+                    </div>
+                    <input type="date" id="p_expiry" class="w-full p-2 border rounded-xl text-xs bg-slate-50 text-slate-500">
+                    <button onclick="addProduct()" class="w-full bg-slate-900 text-white font-bold py-2.5 rounded-xl text-xs">💾 መዝግብ</button>
+                </div>
+
+                <!-- Finance Tab -->
+                <div id="tab-finance" class="tab-content hidden space-y-2">
+                    <select id="f_type" class="w-full p-2 border rounded-xl text-xs bg-slate-50">
+                        <option value="income">📥 ገቢ (Income)</option>
+                        <option value="expense">📤 ወጪ (Expense)</option>
+                    </select>
+                    <input type="number" id="f_amount" placeholder="የገንዘብ መጠን" class="w-full p-2 border rounded-xl text-xs bg-slate-50">
+                    <input type="text" id="f_desc" placeholder="መግለጫ" class="w-full p-2 border rounded-xl text-xs bg-slate-50">
+                    <button onclick="addFinance()" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs">📊 ሂሳብ አስቀምጥ</button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 🧑‍💼 EMPLOYEE SCREEN (POS) -->
+        <div id="employee-screen" class="hidden space-y-4 text-slate-800">
+            <div class="flex justify-between items-center">
+                <h2 id="employee-header" class="text-base font-bold text-slate-900">የሽያጭ ገጽ 💼</h2>
+                <button onclick="logout()" class="text-xs font-bold text-red-500">🚪 ውጣ</button>
+            </div>
+            <div class="bg-white rounded-2xl p-3 space-y-3">
+                <input type="text" id="search-pos" oninput="filterPOS()" placeholder="ዕቃ በስም ፈልግ..." class="w-full p-2 border rounded-xl text-xs bg-slate-50">
+                <div id="pos-items-container" class="space-y-2 max-h-[300px] overflow-y-auto">
+                    <p class="text-xs text-center text-slate-400 py-4">እቃዎች በመጫን ላይ...</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const tg = window.Telegram?.WebApp;
+        if(tg) tg.expand();
+
+        let currentShopId = localStorage.getItem("shop_id") || "";
+        let currentShopName = localStorage.getItem("shop_name") || "";
+        let productsCache = [];
+
+        // የዩአርኤል ፓራሜትር ፍተሻ (URL Params for Employee Direct link)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("role") === "employee" && urlParams.get("shop_id")) {
+            currentShopId = urlParams.get("shop_id");
+            currentShopName = urlParams.get("shop_name") || "Shop";
+            openEmployeeView();
+        } else if (currentShopId) {
+            openOwnerView();
+        }
+
+        function showAuth(role) {
+            document.getElementById('portal-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+            const extra = document.getElementById('owner-extra-fields');
+            const regBtn = document.getElementById('register-btn');
+            
+            if (role === 'owner') {
+                extra.classList.remove('hidden');
+                regBtn.classList.remove('hidden');
+            } else {
+                extra.classList.add('hidden');
+                regBtn.classList.add('hidden');
+            }
+        }
+
+        function backToPortal() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('portal-screen').classList.remove('hidden');
+        }
+
+        async function handleRegister() {
+            const payload = {
+                action: "register_shop",
+                shop_name: document.getElementById('auth_shop_name').value.trim(),
+                owner_name: document.getElementById('auth_owner_name').value.trim(),
+                telegram_chat_id: document.getElementById('auth_telegram_chat_id').value.trim(),
+                password: document.getElementById('auth_password').value.trim()
+            };
+            const res = await callAPI(payload);
+            if (res.status === 'success') {
+                saveSession(res.shop_id, res.shop_name);
+                openOwnerView();
+            } else { alert(res.message); }
+        }
+
+        async function handleLogin() {
+            const payload = {
+                action: "login_shop",
+                shop_name: document.getElementById('auth_shop_name').value.trim(),
+                password: document.getElementById('auth_password').value.trim()
+            };
+            const res = await callAPI(payload);
+            if (res.status === 'success') {
+                saveSession(res.shop_id, res.shop_name);
+                openOwnerView();
+            } else { alert(res.message); }
+        }
+
+        function saveSession(id, name) {
+            currentShopId = id;
+            currentShopName = name;
+            localStorage.setItem("shop_id", id);
+            localStorage.setItem("shop_name", name);
+        }
+
+        function openOwnerView() {
+            document.getElementById('portal-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('owner-screen').classList.remove('hidden');
+            document.getElementById('main-box').className = "w-full max-w-md bg-white rounded-3xl shadow-xl p-5 border border-slate-100 space-y-4 text-slate-800";
+            document.getElementById('owner-header').innerText = `${currentShopName} 🏢`;
+            
+            generateLinks();
+            loadDashboard();
+        }
+
+        function openEmployeeView() {
+            document.getElementById('portal-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('employee-screen').classList.remove('hidden');
+            document.getElementById('main-box').className = "w-full max-w-md bg-white rounded-3xl shadow-xl p-5 border border-slate-100 space-y-4 text-slate-800";
+            document.getElementById('employee-header').innerText = `${currentShopName} (POS) 💼`;
+            loadPOSProducts();
+        }
+
+        function generateLinks() {
+            const baseUrl = window.location.origin + window.location.pathname.replace("index.html", "");
+            document.getElementById('employee-link-input').value = `${baseUrl}?role=employee&shop_id=${currentShopId}&shop_name=${encodeURIComponent(currentShopName)}`;
+            document.getElementById('customer-link-input').value = `${baseUrl}customer.html?shop_id=${currentShopId}&shop_name=${encodeURIComponent(currentShopName)}`;
+        }
+
+        function copyLink(id) {
+            const copyText = document.getElementById(id);
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            alert("✅ ሊንኩ ተገልብጧል!");
+        }
+
+        async function loadDashboard() {
+            const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=get_dashboard&shop_id=${currentShopId}`);
+            const json = await res.json();
+            if (json.status === 'success') {
+                document.getElementById('sales-stat').innerText = `${json.data.today_sales.toFixed(2)} ብር`;
+                document.getElementById('expense-stat').innerText = `${json.data.today_expenses.toFixed(2)} ብር`;
+                const lowBox = document.getElementById('low-stock-box');
+                lowBox.innerHTML = json.data.low_stock.length ? json.data.low_stock.map(p => `<li>${p.name} (ቀሪ: ${p.quantity})</li>`).join('') : "<li>የለም</li>";
+            }
+        }
+
+        async function loadPOSProducts() {
+            const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=get_products&shop_id=${currentShopId}`);
+            const json = await res.json();
+            if (json.status === 'success') {
+                productsCache = json.data;
+                renderPOS(productsCache);
+            }
+        }
+
+        function renderPOS(items) {
+            const con = document.getElementById('pos-items-container');
+            con.innerHTML = items.map(p => `
+                <div class="flex justify-between items-center p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+                    <div>
+                        <h5 class="font-bold text-slate-800">${p.name}</h5>
+                        <p class="text-[10px] text-slate-500">${p.selling_price} ብር | ቀሪ: ${p.quantity}</p>
+                    </div>
+                    <button onclick="sellItem('${p.id}', '${p.name}', ${p.selling_price})" class="bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg">ሽጥ</button>
+                </div>
+            `).join('');
+        }
+
+        async function sellItem(id, name, price) {
+            const qty = prompt(`ስንት ፍሬ ${name} መሸጥ ይፈልጋሉ?`, "1");
+            if (!qty || isNaN(qty)) return;
+            const res = await callAPI({ action: "register_sale", shop_id: currentShopId, product_id: id, product_name: name, sold_qty: Number(qty), price_per_item: price });
+            if (res.status === 'success') {
+                alert("✅ ሽያጩ ተመዝግቧል!");
+                loadPOSProducts();
+            }
+        }
+
+        async function addProduct() {
+            const data = {
+                action: "add_product",
+                shop_id: currentShopId,
+                name: document.getElementById('p_name').value,
+                quantity: document.getElementById('p_qty').value,
+                barcode: document.getElementById('p_barcode').value,
+                buying_price: document.getElementById('p_buying').value,
+                selling_price: document.getElementById('p_selling').value,
+                expiry_date: document.getElementById('p_expiry').value
+            };
+            await callAPI(data);
+            alert("✅ ዕቃው ተመዝግቧል!");
+            switchTab('insights');
+            loadDashboard();
+        }
+
+        async function addFinance() {
+            const data = {
+                action: "add_finance",
+                shop_id: currentShopId,
+                type: document.getElementById('f_type').value,
+                amount: document.getElementById('f_amount').value,
+                description: document.getElementById('f_desc').value
+            };
+            await callAPI(data);
+            alert("✅ ሂሳቡ ተመዝግቧል!");
+            switchTab('insights');
+            loadDashboard();
+        }
+
+        async function callAPI(payload) {
+            const res = await fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            return await res.json();
+        }
+
+        function switchTab(name) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + name).classList.remove('hidden');
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.href = window.location.pathname;
+        }
+    </script>
+</body>
+</html>
