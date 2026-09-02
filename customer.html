@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>የደንበኞች ማዘዣ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-emerald-50 font-sans p-3 min-h-screen flex items-center justify-center text-slate-800">
+
+    <script>
+        const GOOGLE_SCRIPT_URL = "የጉግል_አፕ_ስክሪፕት_DEPLOYMENT_URLህን_እዚህ_ለጥፈው";
+    </script>
+
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-xl p-5 border border-slate-100 space-y-5">
+        <div class="text-center space-y-1">
+            <h1 id="shop-name-title" class="text-xl font-black text-emerald-700">ስማርት ሱቅ</h1>
+            <p class="text-xs text-slate-400">ትዕዛዝ ማስተላለፊያ እና የዱቤ እዳ ማያ</p>
+        </div>
+
+        <!-- Check Debt -->
+        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
+            <h3 class="text-xs font-bold text-slate-600">💳 የዱቤ እዳዎን ያረጋግጡ</h3>
+            <div class="flex gap-1.5">
+                <input type="text" id="debt_name" placeholder="ሙሉ ስምዎ..." class="w-full p-2 bg-white border border-slate-300 rounded-xl text-xs outline-none">
+                <button onclick="checkDebt()" class="bg-blue-600 text-white font-bold px-3 py-2 rounded-xl text-xs">ፈልግ</button>
+            </div>
+            <div id="debt-box" class="hidden p-2 rounded-xl text-center text-xs font-bold mt-2"></div>
+        </div>
+
+        <!-- Place Order -->
+        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2.5">
+            <h3 class="text-xs font-bold text-slate-600">🛍️ አዲስ ትዕዛዝ ያስተላልፉ</h3>
+            <input type="text" id="ord_name" placeholder="የእርስዎ ስም" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs outline-none">
+            <input type="number" id="ord_telegram" placeholder="Telegram ID (የቴሌግራም መለያ)" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs outline-none">
+            <input type="text" id="ord_product" placeholder="የሚፈልጉት እቃ ስም" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs outline-none">
+            <input type="number" id="ord_qty" value="1" min="1" placeholder="ብዛት" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs outline-none">
+            <textarea id="ord_note" placeholder="ማስታወሻ (አድራሻ ወይም ሰዓት)..." class="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs outline-none"></textarea>
+            
+            <button id="btn-order" onclick="sendOrder()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow-md">ትዕዛዝ ላክ</button>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const shopId = urlParams.get("shop_id") || "";
+        const shopName = urlParams.get("shop_name") || "ስማርት ሱቅ";
+
+        document.getElementById('shop-name-title').innerText = `🛒 ${shopName}`;
+
+        async function checkDebt() {
+            const name = document.getElementById('debt_name').value.trim();
+            if (!name) return alert("እባክዎ ስም ያስገቡ!");
+            const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=get_debt&shop_id=${shopId}&customer_name=${encodeURIComponent(name)}`);
+            const data = await res.json();
+            const box = document.getElementById('debt-box');
+            box.classList.remove('hidden');
+            if (data.debt > 0) {
+                box.className = "p-2 rounded-xl text-center text-xs font-bold mt-2 bg-rose-100 text-rose-700";
+                box.innerText = `የአሁኑ እዳዎ፦ ${data.debt} ብር`;
+            } else {
+                box.className = "p-2 rounded-xl text-center text-xs font-bold mt-2 bg-emerald-100 text-emerald-700";
+                box.innerText = `🎉 ምንም የዱቤ እዳ የለብዎትም!`;
+            }
+        }
+
+        async function sendOrder() {
+            const name = document.getElementById('ord_name').value.trim();
+            const tg = document.getElementById('ord_telegram').value.trim();
+            const product = document.getElementById('ord_product').value.trim();
+            const qty = document.getElementById('ord_qty').value;
+            const note = document.getElementById('ord_note').value.trim();
+
+            if (!name || !tg || !product) return alert("እባክዎ አስፈላጊ ሳጥኖችን ይሙሉ!");
+
+            const btn = document.getElementById('btn-order');
+            btn.disabled = true;
+            btn.innerText = "በመላክ ላይ...";
+
+            const payload = {
+                action: "place_order",
+                shop_id: shopId,
+                customer_name: name,
+                telegram_id: tg,
+                product_name: product,
+                quantity: qty,
+                note: note
+            };
+
+            const res = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                alert("✅ ትዕዛዝዎ በተሳካ ሁኔታ ተላልፏል!");
+                document.getElementById('ord_product').value = "";
+                document.getElementById('ord_note').value = "";
+            } else { alert("❌ ስህተት አጋጥሟል!"); }
+            btn.disabled = false;
+            btn.innerText = "ትዕዛዝ ላክ";
+        }
+    </script>
+</body>
+</html>
